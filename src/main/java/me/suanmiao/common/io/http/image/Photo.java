@@ -477,7 +477,7 @@ public class Photo {
     url = TextUtil.parseUrl(url);
     this.contentState = ContentState.NONE;
     try {
-      Bitmap result = requestManager.getCacheManager().get(url);
+      Bitmap result = requestManager.getCacheManager().getFromRam(url);
       if (result != null) {
         imageView.setImageBitmap(result);
         this.contentState = ContentState.DONE;
