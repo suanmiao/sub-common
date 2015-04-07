@@ -153,9 +153,6 @@ public class Photo {
     if (view.getTag() != null) {
       Photo result = (Photo) view.getTag();
       if (!TextUtils.equals(url, result.getUrl())) {
-        if (result.getRequest() != null) {
-          result.getRequest().cancel();
-        }
         result.setContentState(ContentState.NONE);
         result.setUrl(url);
       }
@@ -264,9 +261,6 @@ public class Photo {
     if (imageView != null && imageView.getTag() != null) {
       final Photo photo = (Photo) imageView.getTag();
       if (photo.getLoadingState() != ContentState.DONE) {
-        if (photo.getRequest() != null) {
-          photo.getRequest().cancel();
-        }
         photo.setContentState(ContentState.LOADING);
         CommonRequest<Photo> request = null;
         switch (RequestManager.getExecuteMode()) {
@@ -304,9 +298,6 @@ public class Photo {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView, url + Photo.BLUR_SUFFIX);
         if (photo.getLoadingState() != ContentState.NONE) {
-          if (photo.getRequest() != null) {
-            photo.getRequest().cancel();
-          }
           imageView.setImageResource(defaultResourceID);
           photo.setContentState(ContentState.LOADING);
           CommonRequest<Photo> request = null;
