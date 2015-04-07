@@ -29,12 +29,10 @@ import me.suanmiao.common.util.TextUtil;
  */
 public class Photo {
 
-
   public static final String BLUR_SUFFIX = "_blur";
   public static final int INVALID_VALUE = -1;
 
   private int viewWidth = INVALID_VALUE;
-
   private int viewHeight = INVALID_VALUE;
 
   private String url;
