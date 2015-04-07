@@ -272,7 +272,7 @@ public class Photo {
         switch (RequestManager.getExecuteMode()) {
           case ROBO_SPIECE:
             PhotoSpiceRequest spiceRequest = photo.newSpiceRequest();
-            new SpiceBuilder<Photo>().request(spiceRequest)
+            request = new SpiceBuilder<Photo>().request(spiceRequest)
                 .build();
             break;
 
