@@ -8,6 +8,7 @@ import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 
+import me.suanmiao.common.io.MMBean;
 import me.suanmiao.common.io.http.image.Photo;
 import me.suanmiao.common.util.BitmapUtil;
 
@@ -27,7 +28,7 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
     try {
       if (response instanceof BitmapNetworkResponse) {
         BitmapNetworkResponse bitmapNetworkResponse = (BitmapNetworkResponse) response;
-        photo.setContent(bitmapNetworkResponse.getResult());
+        photo.setBitmap(bitmapNetworkResponse.getResult());
         return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
       } else {
         /**
@@ -40,9 +41,9 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
         response.headers.get(KEY_CONTENT_LENGTH);
         Bitmap result = BitmapUtil.decodePhoto(response.data, photo);
         if (result != null) {
-          getCacheManager().put(photo.getUrl(), result, true);
+          getCacheManager().put(photo.getUrl(), MMBean.fromBitmap(result), true);
         }
-        photo.setContent(result);
+        photo.setBitmap(result);
         return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
       }
     } catch (Exception e) {

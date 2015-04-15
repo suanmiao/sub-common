@@ -12,7 +12,10 @@ import com.octo.android.robospice.persistence.exception.SpiceException;
 import java.io.IOException;
 
 import me.suanmiao.common.component.BaseApplication;
+import me.suanmiao.common.io.MMBean;
 import me.suanmiao.common.io.http.CommonRequest;
+import me.suanmiao.common.io.http.ProgressListener;
+import me.suanmiao.common.io.http.RequestManager;
 import me.suanmiao.common.io.http.SpiceBuilder;
 import me.suanmiao.common.io.http.SpiceCommonListener;
 import me.suanmiao.common.io.http.VolleyBuilder;
@@ -20,8 +23,7 @@ import me.suanmiao.common.io.http.VolleyCommonListener;
 import me.suanmiao.common.io.http.image.spice.PhotoSpiceRequest;
 import me.suanmiao.common.io.http.image.volley.BlurPhotoActionDelivery;
 import me.suanmiao.common.io.http.image.volley.PhotoActionDelivery;
-import me.suanmiao.common.io.http.ProgressListener;
-import me.suanmiao.common.io.http.RequestManager;
+import me.suanmiao.common.ui.widget.BigDrawable;
 import me.suanmiao.common.util.TextUtil;
 
 /**
@@ -37,7 +39,10 @@ public class Photo {
 
   private String url;
 
-  private Bitmap content;
+  private byte[] content;
+  private Bitmap bitmapContent;
+
+  private ResultHandler mResultHandler;
 
   /**
    * about progress
@@ -66,10 +71,11 @@ public class Photo {
 
   private static RequestManager mRequestManager;
 
-  public Photo(String url, int viewWidth, int viewHeight) {
+  public Photo(String url, int viewWidth, int viewHeight, ResultHandler resultHandler) {
     this.viewWidth = viewWidth;
     this.viewHeight = viewHeight;
     this.url = url;
+    this.mResultHandler = resultHandler;
     mRequestManager = BaseApplication.getRequestManager();
   }
 
@@ -89,12 +95,24 @@ public class Photo {
     return url;
   }
 
-  public void setContent(Bitmap content) {
+  public void setContent(byte[] content) {
     this.content = content;
   }
 
-  public Bitmap getContent() {
+  public void setBitmap(Bitmap content) {
+    this.bitmapContent = content;
+  }
+
+  public Bitmap getBitmapContent() {
+    return bitmapContent;
+  }
+
+  public byte[] getContent() {
     return content;
+  }
+
+  public ResultHandler getResultHandler() {
+    return mResultHandler;
   }
 
   public void setProgressListener(ProgressListener progressListener) {
@@ -140,7 +158,7 @@ public class Photo {
    * @param url target url to request image
    * @return
    */
-  public static Photo getObject(ImageView view, String url) {
+  public static Photo getObject(ImageView view, String url, ResultHandler resultHandler) {
     /**
      * scheme :
      * when there is a Photo object in imageView's tag,just compare the url ,if not equal ,cancel
@@ -163,18 +181,23 @@ public class Photo {
         width = view.getLayoutParams().width > 0 ? view.getLayoutParams().width : 0;
         height = view.getLayoutParams().height > 0 ? view.getLayoutParams().height : 0;
       }
-      return new Photo(url, width, height);
+      return new Photo(url, width, height, resultHandler);
     }
   }
 
   public static void loadScrollItemImg(final ImageView imageView, String url,
-      int defaultResourceID, int scrollState, float scrollSpeed) {
+      int defaultResourceID, int scrollState) {
+    loadScrollItemImg(imageView, url, defaultResourceID, scrollState, null);
+  }
+
+  public static void loadScrollItemImg(final ImageView imageView, String url,
+      int defaultResourceID, int scrollState, ResultHandler resultHandler) {
     if (TextUtils.isEmpty(url)) {
       return;
     }
     url = TextUtil.parseUrl(url);
 
-    final Photo photo = Photo.getObject(imageView, url);
+    final Photo photo = Photo.getObject(imageView, url, resultHandler);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView, url);
@@ -219,7 +242,12 @@ public class Photo {
   }
 
   public static void loadImg(final ImageView imageView, String url, int defaultResourceID) {
-    final Photo photo = Photo.getObject(imageView, url);
+    loadImg(imageView, url, defaultResourceID, null);
+  }
+
+  public static void loadImg(final ImageView imageView, String url, int defaultResourceID,
+      ResultHandler resultHandler) {
+    final Photo photo = Photo.getObject(imageView, url, resultHandler);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView, url);
@@ -293,7 +321,12 @@ public class Photo {
   }
 
   public static void loadBlurImg(final ImageView imageView, String url, int defaultResourceID) {
-    final Photo photo = Photo.getObject(imageView, url);
+    loadBlurImg(imageView, url, defaultResourceID, null);
+  }
+
+  public static void loadBlurImg(final ImageView imageView, String url, int defaultResourceID,
+      ResultHandler resultHandler) {
+    final Photo photo = Photo.getObject(imageView, url, resultHandler);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView, url + Photo.BLUR_SUFFIX);
@@ -337,13 +370,18 @@ public class Photo {
   }
 
   public static void loadScrollItemBlurImg(final ImageView imageView, String url,
-      int defaultResourceID, int scrollState, float scrollSpeed) {
+      int defaultResourceID, int scrollState) {
+    loadScrollItemImg(imageView, url, defaultResourceID,scrollState, null);
+  }
+
+  public static void loadScrollItemBlurImg(final ImageView imageView, String url,
+      int defaultResourceID, int scrollState, ResultHandler resultHandler) {
     if (TextUtils.isEmpty(url)) {
       return;
     }
     url = TextUtil.parseUrl(url);
 
-    final Photo photo = Photo.getObject(imageView, url);
+    final Photo photo = Photo.getObject(imageView, url, resultHandler);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView, url + Photo.BLUR_SUFFIX);
@@ -444,8 +482,7 @@ public class Photo {
           @Override
           public void onRequestSuccess(Photo photo) {
             if (photo.getContent() != null) {
-              photo.setContentState(ContentState.DONE);
-              imageView.setImageBitmap(photo.getContent());
+              processResult(photo, imageView);
             }
           }
         }, imageView);
@@ -461,12 +498,24 @@ public class Photo {
           @Override
           public void onResponse(Photo photo) {
             if (photo.getContent() != null) {
-              photo.setContentState(ContentState.DONE);
-              imageView.setImageBitmap(photo.getContent());
+              processResult(photo, imageView);
             }
           }
         }, imageView);
         break;
+    }
+  }
+
+  private static void processResult(Photo photo, ImageView imageView) {
+    photo.setContentState(ContentState.DONE);
+    if (photo.getResultHandler() == null) {
+      if (photo.getContent() != null) {
+        imageView.setImageDrawable(new BigDrawable(photo.getContent()));
+      } else if (photo.getBitmapContent() != null) {
+        imageView.setImageBitmap(photo.getBitmapContent());
+      }
+    } else {
+      photo.getResultHandler().onResult(photo.getContent(), imageView);
     }
   }
 
@@ -477,14 +526,18 @@ public class Photo {
     url = TextUtil.parseUrl(url);
     this.contentState = ContentState.NONE;
     try {
-      Bitmap result = requestManager.getCacheManager().getFromRam(url);
+      MMBean result = requestManager.getCacheManager().getFromRam(url);
       if (result != null) {
-        imageView.setImageBitmap(result);
-        this.contentState = ContentState.DONE;
+        this.setContent(result.getData());
+        processResult(this, imageView);
       }
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public interface ResultHandler {
+    public void onResult(byte[] data, ImageView targetImage);
   }
 
   private static boolean saveTraffic() {

@@ -2,7 +2,6 @@ package me.suanmiao.common.io.cache;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.util.LruCache;
 
 import java.io.File;
@@ -10,12 +9,14 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import me.suanmiao.common.io.MMBean;
+
 /**
  * Created by suanmiao on 14-11-29.
  */
 public class CacheManager {
-    private LruCache<String, Bitmap> ramCache;
-    private DiskBitmapCache diskBitmapCache;
+    private LruCache<String, MMBean> ramCache;
+    private DiskMMCache diskBitmapCache;
     private static final int APP_VERSION = 1;
 
     private static final int MB = 1024 * 1024;
@@ -26,21 +27,21 @@ public class CacheManager {
         ramCache = new LruCache<>(getMemoryCacheSize(context));
         try {
             DiskLruCache diskBitmapLruCache = DiskLruCache.open(new File(diskBitmapPath), APP_VERSION, 1, BITMAP_MAX_FILE_CACHE_SIZE);
-            diskBitmapCache = new DiskBitmapCache(diskBitmapLruCache);
+            diskBitmapCache = new DiskMMCache(diskBitmapLruCache);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Bitmap get(String originalKey) throws IOException {
+    public MMBean get(String originalKey) throws IOException {
         if (ramCache == null || originalKey == null) {
             return null;
         }
-        Bitmap ramResult = getFromRam(originalKey);
+        MMBean ramResult = getFromRam(originalKey);
         if (ramResult != null) {
             return ramResult;
         }
-        Bitmap diskResult = getFromDisk(originalKey);
+        MMBean diskResult = getFromDisk(originalKey);
         if (diskResult != null) {
             putToRam(originalKey, diskResult);
             return diskResult;
@@ -48,7 +49,7 @@ public class CacheManager {
         return null;
     }
 
-    public Bitmap getFromRam(String originalKey) throws IOException {
+    public MMBean getFromRam(String originalKey) throws IOException {
         if (ramCache == null || originalKey == null) {
             return null;
         }
@@ -56,7 +57,7 @@ public class CacheManager {
         return ramCache.get(originalKey);
     }
 
-    public Bitmap getFromDisk(String originalKey) throws IOException {
+    public MMBean getFromDisk(String originalKey) throws IOException {
         if (diskBitmapCache == null || originalKey == null) {
             return null;
         }
@@ -64,7 +65,7 @@ public class CacheManager {
         return diskBitmapCache.get(originalKey);
     }
 
-    public boolean put(String originKey, Bitmap value, boolean cacheToDisk) throws IOException {
+    public boolean put(String originKey, MMBean value, boolean cacheToDisk) throws IOException {
         putToRam(originKey, value);
         if(cacheToDisk){
             return putToDisk(originKey,value);
@@ -72,7 +73,7 @@ public class CacheManager {
         return false;
    }
 
-    public boolean putToRam(String originKey, Bitmap value) {
+    public boolean putToRam(String originKey, MMBean value) {
         if (originKey != null && value != null) {
             originKey = getHashKey(originKey);
             ramCache.put(originKey, value);
@@ -82,7 +83,7 @@ public class CacheManager {
         }
     }
 
-    public boolean putToDisk(String originKey, Bitmap value) {
+    public boolean putToDisk(String originKey, MMBean value) {
         if (originKey != null && value != null && diskBitmapCache != null) {
             originKey = getHashKey(originKey);
             try {
