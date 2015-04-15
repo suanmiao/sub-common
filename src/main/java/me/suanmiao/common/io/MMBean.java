@@ -18,7 +18,7 @@ public class MMBean {
   public static final int TYPE_BYTE = 2;
 
   private static final int LENGTH_TYPE_BYTE = 4;
-  private static final int LENGTH_SIZE_BYTE = 8;
+  private static final int LENGTH_SIZE_BYTE = 16;
   private static final int BUFFER_SIZE = 512;
 
   private int type = TYPE_NONE;
@@ -57,19 +57,8 @@ public class MMBean {
   }
 
   public static MMBean fromBitmapStream(InputStream stream) {
-    try {
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      byte[] buffer = new byte[BUFFER_SIZE];
-      int len;
-      while ((len = stream.read(buffer)) > -1) {
-        baos.write(buffer, 0, len);
-      }
-      baos.flush();
-      return new MMBean(TYPE_BITMAP, baos.toByteArray());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
+    Bitmap result = BitmapFactory.decodeStream(stream);
+    return new MMBean(result);
   }
 
   public static MMBean fromStream(InputStream stream) {
