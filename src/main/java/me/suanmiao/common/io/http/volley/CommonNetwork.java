@@ -70,7 +70,7 @@ public class CommonNetwork extends BasicNetwork {
     try {
       CacheManager mCacheManager = BaseApplication.getRequestManager().getCacheManager();
       MMBean bean = mCacheManager.get(fakeVolleyRequest.getUrl());
-      return bean.toBitmap();
+      return bean.getDataBitmap();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -81,7 +81,7 @@ public class CommonNetwork extends BasicNetwork {
     try {
       CacheManager mCacheManager = BaseApplication.getRequestManager().getCacheManager();
       MMBean bean = mCacheManager.get(fakeVolleyRequest.getUrl() + Photo.BLUR_SUFFIX);
-      return bean.toBitmap();
+      return bean.getDataBitmap();
     } catch (IOException e) {
       e.printStackTrace();
     }

@@ -1,6 +1,5 @@
 package me.suanmiao.common.io.http.image;
 
-import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.widget.AbsListView;
 import android.widget.ImageView;
@@ -23,7 +22,6 @@ import me.suanmiao.common.io.http.VolleyCommonListener;
 import me.suanmiao.common.io.http.image.spice.PhotoSpiceRequest;
 import me.suanmiao.common.io.http.image.volley.BlurPhotoActionDelivery;
 import me.suanmiao.common.io.http.image.volley.PhotoActionDelivery;
-import me.suanmiao.common.ui.widget.BigDrawable;
 import me.suanmiao.common.util.TextUtil;
 
 /**
@@ -39,8 +37,7 @@ public class Photo {
 
   private String url;
 
-  private byte[] content;
-  private Bitmap bitmapContent;
+  private MMBean content;
 
   private ResultHandler mResultHandler;
 
@@ -95,19 +92,11 @@ public class Photo {
     return url;
   }
 
-  public void setContent(byte[] content) {
+  public void setContent(MMBean content) {
     this.content = content;
   }
 
-  public void setBitmap(Bitmap content) {
-    this.bitmapContent = content;
-  }
-
-  public Bitmap getBitmapContent() {
-    return bitmapContent;
-  }
-
-  public byte[] getContent() {
+  public MMBean getContent() {
     return content;
   }
 
@@ -371,7 +360,7 @@ public class Photo {
 
   public static void loadScrollItemBlurImg(final ImageView imageView, String url,
       int defaultResourceID, int scrollState) {
-    loadScrollItemImg(imageView, url, defaultResourceID,scrollState, null);
+    loadScrollItemImg(imageView, url, defaultResourceID, scrollState, null);
   }
 
   public static void loadScrollItemBlurImg(final ImageView imageView, String url,
@@ -509,10 +498,11 @@ public class Photo {
   private static void processResult(Photo photo, ImageView imageView) {
     photo.setContentState(ContentState.DONE);
     if (photo.getResultHandler() == null) {
-      if (photo.getContent() != null) {
-        imageView.setImageDrawable(new BigDrawable(photo.getContent()));
-      } else if (photo.getBitmapContent() != null) {
-        imageView.setImageBitmap(photo.getBitmapContent());
+      MMBean content = photo.getContent();
+      if (content != null) {
+        if (content.getType() == MMBean.TYPE_BITMAP) {
+          imageView.setImageBitmap(content.getDataBitmap());
+        }
       }
     } else {
       photo.getResultHandler().onResult(photo.getContent(), imageView);
@@ -528,7 +518,7 @@ public class Photo {
     try {
       MMBean result = requestManager.getCacheManager().getFromRam(url);
       if (result != null) {
-        this.setContent(result.getData());
+        this.setContent(result);
         processResult(this, imageView);
       }
     } catch (IOException e) {
@@ -537,7 +527,7 @@ public class Photo {
   }
 
   public interface ResultHandler {
-    public void onResult(byte[] data, ImageView targetImage);
+    public void onResult(MMBean content, ImageView targetImage);
   }
 
   private static boolean saveTraffic() {

@@ -48,7 +48,7 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
     switch (loadOption) {
       case ONLY_FROM_CACHE: {
         MMBean cacheContent = getCacheManager().get(photo.getUrl());
-        photo.setContent(cacheContent.getData());
+        photo.setContent(cacheContent);
       }
         break;
       case ONLY_FROM_NETWORK: {
@@ -56,7 +56,7 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
         if (shouldCache && networkContent != null) {
           getCacheManager().put(photo.getUrl(), networkContent, true);
         }
-        photo.setContent(networkContent.getData());
+        photo.setContent(networkContent);
       }
         break;
       case BOTH: {
@@ -67,7 +67,7 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
             getCacheManager().put(photo.getUrl(), content, true);
           }
         }
-        photo.setContent(content.getData());
+        photo.setContent(content);
       }
         break;
     }
@@ -79,15 +79,15 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
       case ONLY_FROM_CACHE: {
         MMBean cacheContent = getCacheManager().get(photo.getUrl() + Photo.BLUR_SUFFIX);
         if (cacheContent != null) {
-          photo.setContent(cacheContent.getData());
+          photo.setContent(cacheContent);
         } else {
           cacheContent = getCacheManager().get(photo.getUrl());
           if (cacheContent != null) {
             Bitmap blurBitmap =
-                Blur.apply(BaseApplication.getAppContext(), cacheContent.toBitmap());
-            photo.setBitmap(blurBitmap);
+                Blur.apply(BaseApplication.getAppContext(), cacheContent.getDataBitmap());
+            photo.setContent(new MMBean(blurBitmap));
             getCacheManager().put(photo.getUrl() + Photo.BLUR_SUFFIX,
-                MMBean.fromBitmap(blurBitmap), true);
+                new MMBean(blurBitmap), true);
           }
         }
       }
@@ -96,11 +96,11 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
         MMBean networkContent = getMMFromNetwork();
         if (shouldCache && networkContent != null) {
           Bitmap blurBitmap =
-              Blur.apply(BaseApplication.getAppContext(), networkContent.toBitmap());
+              Blur.apply(BaseApplication.getAppContext(), networkContent.getDataBitmap());
           getCacheManager().put(photo.getUrl(), networkContent, true);
-          getCacheManager().put(photo.getUrl() + Photo.BLUR_SUFFIX, MMBean.fromBitmap(blurBitmap),
+          getCacheManager().put(photo.getUrl() + Photo.BLUR_SUFFIX, new MMBean(blurBitmap),
               true);
-          photo.setBitmap(blurBitmap);
+          photo.setContent(new MMBean(blurBitmap));
         }
       }
         break;
@@ -109,19 +109,20 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
         if (content == null) {
           content = getCacheManager().get(photo.getUrl());
           if (content != null) {
-            Bitmap blurBitmap = Blur.apply(BaseApplication.getAppContext(), content.toBitmap());
+            Bitmap blurBitmap =
+                Blur.apply(BaseApplication.getAppContext(), content.getDataBitmap());
             getCacheManager().put(photo.getUrl() + Photo.BLUR_SUFFIX,
-                MMBean.fromBitmap(blurBitmap), true);
-            photo.setBitmap(blurBitmap);
+                new MMBean(blurBitmap), true);
+            photo.setContent(new MMBean(blurBitmap));
           } else {
             MMBean networkContent = getMMFromNetwork();
             if (shouldCache && networkContent != null) {
               Bitmap blurBitmap =
-                  Blur.apply(BaseApplication.getAppContext(), networkContent.toBitmap());
+                  Blur.apply(BaseApplication.getAppContext(), networkContent.getDataBitmap());
               getCacheManager().put(photo.getUrl(), networkContent, true);
               getCacheManager().put(photo.getUrl() + Photo.BLUR_SUFFIX,
-                  MMBean.fromBitmap(blurBitmap), true);
-              photo.setBitmap(blurBitmap);
+                  new MMBean(blurBitmap), true);
+              photo.setContent(new MMBean(blurBitmap));
             }
           }
         }

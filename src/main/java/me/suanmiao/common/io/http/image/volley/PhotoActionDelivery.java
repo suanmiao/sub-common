@@ -28,7 +28,7 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
     try {
       if (response instanceof BitmapNetworkResponse) {
         BitmapNetworkResponse bitmapNetworkResponse = (BitmapNetworkResponse) response;
-        photo.setBitmap(bitmapNetworkResponse.getResult());
+        photo.setContent(new MMBean(bitmapNetworkResponse.getResult()));
         return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
       } else {
         /**
@@ -41,9 +41,9 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
         response.headers.get(KEY_CONTENT_LENGTH);
         Bitmap result = BitmapUtil.decodePhoto(response.data, photo);
         if (result != null) {
-          getCacheManager().put(photo.getUrl(), MMBean.fromBitmap(result), true);
+          getCacheManager().put(photo.getUrl(), new MMBean(result), true);
         }
-        photo.setBitmap(result);
+        photo.setContent(new MMBean(result));
         return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
       }
     } catch (Exception e) {

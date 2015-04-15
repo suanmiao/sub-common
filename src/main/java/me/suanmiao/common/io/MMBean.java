@@ -9,30 +9,35 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-import me.suanmiao.common.ui.widget.BigBitmap;
-
 /**
  * Created by suanmiao on 15/4/15.
  */
 public class MMBean {
   public static final int TYPE_NONE = -1;
-  public static final int TYPE_PHOTO = 1;
+  public static final int TYPE_BITMAP = 1;
   public static final int TYPE_BYTE = 2;
 
-  private static final int LENGTH_TYPE_BYTE = 2;
-  private static final int LENGTH_SIZE_BYTE = 4;
+  private static final int LENGTH_TYPE_BYTE = 4;
+  private static final int LENGTH_SIZE_BYTE = 8;
   private static final int BUFFER_SIZE = 512;
 
   private int type = TYPE_NONE;
   private long size;
-  private byte[] data;
 
-  private BigBitmap cachedBitmap;
+  // original data
+  private byte[] data;
+  // bitmap data
+  private Bitmap dataBitmap;
 
   public MMBean(int type, byte[] data) {
     this.type = type;
     this.data = data;
     this.size = data.length;
+  }
+
+  public MMBean(Bitmap bitmap) {
+    this.type = TYPE_BITMAP;
+    this.dataBitmap = bitmap;
   }
 
   public long getSize() {
@@ -47,9 +52,12 @@ public class MMBean {
     return data;
   }
 
+  public Bitmap getDataBitmap() {
+    return dataBitmap;
+  }
+
   public static MMBean fromBitmapStream(InputStream stream) {
     try {
-      int type = TYPE_PHOTO;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       byte[] buffer = new byte[BUFFER_SIZE];
       int len;
@@ -57,7 +65,7 @@ public class MMBean {
         baos.write(buffer, 0, len);
       }
       baos.flush();
-      return new MMBean(type, baos.toByteArray());
+      return new MMBean(TYPE_BITMAP, baos.toByteArray());
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -73,38 +81,45 @@ public class MMBean {
       byte[] sizeBytes = new byte[LENGTH_TYPE_BYTE];
       byteBuffer = ByteBuffer.wrap(sizeBytes);
       long size = byteBuffer.getLong();
-
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      byte[] buffer = new byte[BUFFER_SIZE];
-      int len;
-      while ((len = stream.read(buffer)) > -1) {
-        baos.write(buffer, 0, len);
+      switch (type) {
+        case TYPE_BYTE:
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          byte[] buffer = new byte[BUFFER_SIZE];
+          int len;
+          while ((len = stream.read(buffer)) > -1) {
+            baos.write(buffer, 0, len);
+          }
+          baos.flush();
+          return new MMBean(type, baos.toByteArray());
+        case TYPE_BITMAP:
+          Bitmap bitmap = BitmapFactory.decodeStream(stream);
+          return new MMBean(bitmap);
       }
-      baos.flush();
-      return new MMBean(type, baos.toByteArray());
+
     } catch (IOException e) {
       e.printStackTrace();
     }
     return null;
   }
 
-  public static MMBean fromBitmap(Bitmap content) {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    content.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
-    return new MMBean(TYPE_PHOTO, byteArrayOutputStream.toByteArray());
-  }
-
-  public Bitmap toBitmap() {
-    return BitmapFactory.decodeByteArray(data, 0, (int) size);
-  }
-
   public void toStream(OutputStream stream) {
     try {
       byte[] typeBytes = ByteBuffer.allocate(LENGTH_TYPE_BYTE).putInt(type).array();
       byte[] sizeBytes = ByteBuffer.allocate(LENGTH_SIZE_BYTE).putLong(size).array();
-      stream.write(typeBytes);
-      stream.write(sizeBytes);
-      stream.write(data);
+      switch (type) {
+        case TYPE_BYTE:
+          stream.write(typeBytes);
+          stream.write(sizeBytes);
+          stream.write(data);
+          break;
+        case TYPE_BITMAP:
+          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+          dataBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+          stream.write(typeBytes);
+          stream.write(sizeBytes);
+          stream.write(byteArrayOutputStream.toByteArray());
+          break;
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }

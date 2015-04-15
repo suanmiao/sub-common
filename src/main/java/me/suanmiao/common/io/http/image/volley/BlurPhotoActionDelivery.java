@@ -38,13 +38,13 @@ public class BlurPhotoActionDelivery extends BaseCachePhotoActionDelivery {
       response.headers.get(KEY_CONTENT_LENGTH);
       Bitmap result = BitmapUtil.decodePhoto(response.data, photo);
       if (result != null) {
-        getCacheManager().put(photo.getUrl(), MMBean.fromBitmap(result), true);
+        getCacheManager().put(photo.getUrl(), new MMBean(result), true);
       }
       Bitmap blurBitmap = Blur.apply(BaseApplication.getAppContext(), result);
       if (blurBitmap != null) {
-        getCacheManager().put(photo.getUrl() + BLUR_SUFFIX, MMBean.fromBitmap(blurBitmap), true);
+        getCacheManager().put(photo.getUrl() + BLUR_SUFFIX, new MMBean(blurBitmap), true);
       }
-      photo.setBitmap(blurBitmap);
+        photo.setContent(new MMBean(blurBitmap));
       return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
     } catch (Exception e) {
       return Response.error(new ParseError());

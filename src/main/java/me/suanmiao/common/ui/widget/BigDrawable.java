@@ -31,16 +31,18 @@ public class BigDrawable extends Drawable {
         for (int y = 0; y < mBigMap.getRowCount(); y++) {
           int left = x * BigBitmap.MAX_ITEM_WIDTH;
           int top = y * BigBitmap.MAX_ITEM_HEIGHT;
-          int itemWidth = mBigMap.getMatrix()[x][y].getWidth();
-          int itemHeight = mBigMap.getMatrix()[x][y].getHeight();
-          Rect itemRect = new Rect(left, top, left + itemWidth, top + itemHeight);
-          Rect dstRect = new Rect(itemRect);
-          mPaint.setColor(Color.RED);
-          canvas.drawBitmap(mBigMap.getMatrix()[x][y], left, top, mPaint);
-          mPaint.setStyle(Paint.Style.STROKE);
-          mPaint.setStrokeWidth(2);
-          // canvas.drawRect(itemRect, mPaint);
-          // canvas.drawBitmap(mBigMap.matrix[x][y], dstRect, itemRect, mPaint);
+          if (mBigMap.getMatrix()[x][y] != null) {
+            int itemWidth = mBigMap.getMatrix()[x][y].getWidth();
+            int itemHeight = mBigMap.getMatrix()[x][y].getHeight();
+            Rect itemRect = new Rect(left, top, left + itemWidth, top + itemHeight);
+            Rect dstRect = new Rect(itemRect);
+            mPaint.setColor(Color.RED);
+            canvas.drawBitmap(mBigMap.getMatrix()[x][y], left, top, mPaint);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(2);
+            // canvas.drawRect(itemRect, mPaint);
+            // canvas.drawBitmap(mBigMap.matrix[x][y], dstRect, itemRect, mPaint);
+          }
         }
       }
     }
