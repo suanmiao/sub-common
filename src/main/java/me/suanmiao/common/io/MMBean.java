@@ -67,7 +67,7 @@ public class MMBean {
       stream.read(typeBytes);
       ByteBuffer byteBuffer = ByteBuffer.wrap(typeBytes);
       int type = byteBuffer.getInt();
-      byte[] sizeBytes = new byte[LENGTH_TYPE_BYTE];
+      byte[] sizeBytes = new byte[LENGTH_SIZE_BYTE];
       stream.read(sizeBytes);
       byteBuffer = ByteBuffer.wrap(sizeBytes);
       long size = byteBuffer.getLong();
