@@ -9,9 +9,10 @@ import com.android.volley.VolleyError;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import me.suanmiao.common.component.BaseApplication;
-import me.suanmiao.common.io.MMBean;
+import me.suanmiao.common.io.cache.BaseMMBean;
 import me.suanmiao.common.io.http.CommonRequest;
 import me.suanmiao.common.io.http.ProgressListener;
 import me.suanmiao.common.io.http.RequestManager;
@@ -20,7 +21,6 @@ import me.suanmiao.common.io.http.SpiceCommonListener;
 import me.suanmiao.common.io.http.VolleyBuilder;
 import me.suanmiao.common.io.http.VolleyCommonListener;
 import me.suanmiao.common.io.http.image.spice.PhotoSpiceRequest;
-import me.suanmiao.common.io.http.image.volley.BlurPhotoActionDelivery;
 import me.suanmiao.common.io.http.image.volley.PhotoActionDelivery;
 import me.suanmiao.common.util.TextUtil;
 
@@ -37,7 +37,7 @@ public class Photo {
 
   private String url;
 
-  private MMBean content;
+  private BaseMMBean content;
 
   private ResultHandler mResultHandler;
 
@@ -92,11 +92,11 @@ public class Photo {
     return url;
   }
 
-  public void setContent(MMBean content) {
+  public void setContent(BaseMMBean content) {
     this.content = content;
   }
 
-  public MMBean getContent() {
+  public BaseMMBean getContent() {
     return content;
   }
 
@@ -309,155 +309,6 @@ public class Photo {
     }
   }
 
-  public static void loadBlurImg(final ImageView imageView, String url, int defaultResourceID) {
-    loadBlurImg(imageView, url, defaultResourceID, null);
-  }
-
-  public static void loadBlurImg(final ImageView imageView, String url, int defaultResourceID,
-      ResultHandler resultHandler) {
-    final Photo photo = Photo.getObject(imageView, url, resultHandler);
-    if (photo != null) {
-      if (photo.getLoadingState() != ContentState.DONE) {
-        photo.loadFromRamCache(mRequestManager, imageView, url + Photo.BLUR_SUFFIX);
-        if (photo.getLoadingState() != ContentState.NONE) {
-          imageView.setImageResource(defaultResourceID);
-          photo.setContentState(ContentState.LOADING);
-          CommonRequest<Photo> request = null;
-          switch (RequestManager.getExecuteMode()) {
-            case ROBO_SPIECE:
-              PhotoSpiceRequest spiceRequest = photo.newSpiceRequest();
-              if (saveTraffic) {
-                spiceRequest.setLoadOption(LoadOption.ONLY_FROM_CACHE);
-              } else {
-                spiceRequest.setLoadOption(LoadOption.BOTH);
-              }
-              request = new SpiceBuilder<Photo>().request(spiceRequest)
-                  .build();
-              break;
-
-            case VOLLEY:
-              request =
-                  new VolleyBuilder<Photo>().url(photo.getUrl())
-                      .method(Request.Method.GET)
-                      .actionDelivery(new PhotoActionDelivery(photo)).build();
-              break;
-          }
-          if (request != null) {
-            request.setBlurResult(true);
-            photo.setRequest(request);
-            if (saveTraffic) {
-              request.setLoadOption(LoadOption.ONLY_FROM_CACHE);
-            } else {
-              request.setLoadOption(LoadOption.BOTH);
-            }
-            executeFullRequest(request, photo, imageView);
-          }
-        }
-      }
-      imageView.setTag(photo);
-    }
-  }
-
-  public static void loadScrollItemBlurImg(final ImageView imageView, String url,
-      int defaultResourceID, int scrollState) {
-    loadScrollItemImg(imageView, url, defaultResourceID, scrollState, null);
-  }
-
-  public static void loadScrollItemBlurImg(final ImageView imageView, String url,
-      int defaultResourceID, int scrollState, ResultHandler resultHandler) {
-    if (TextUtils.isEmpty(url)) {
-      return;
-    }
-    url = TextUtil.parseUrl(url);
-
-    final Photo photo = Photo.getObject(imageView, url, resultHandler);
-    if (photo != null) {
-      if (photo.getLoadingState() != ContentState.DONE) {
-        photo.loadFromRamCache(mRequestManager, imageView, url + Photo.BLUR_SUFFIX);
-        if (photo.getLoadingState() == ContentState.NONE) {
-          imageView.setImageResource(defaultResourceID);
-        }
-        if (saveTraffic()) {
-          return;
-        }
-        if (photo.getLoadingState() == ContentState.NONE
-            && scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
-          photo.setContentState(ContentState.LOADING);
-          CommonRequest<Photo> request = null;
-          switch (RequestManager.getExecuteMode()) {
-            case ROBO_SPIECE:
-              PhotoSpiceRequest spiceRequest = photo.newSpiceRequest();
-              request = new SpiceBuilder<Photo>().request(spiceRequest)
-                  .build();
-              break;
-
-            case VOLLEY:
-              request =
-                  new VolleyBuilder<Photo>().url(photo.getUrl())
-                      .method(Request.Method.GET)
-                      .actionDelivery(new BlurPhotoActionDelivery(photo)).build();
-              break;
-          }
-          if (request != null) {
-            request.setBlurResult(true);
-            photo.setRequest(request);
-            if (saveTraffic) {
-              request.setLoadOption(LoadOption.ONLY_FROM_CACHE);
-            } else {
-              request.setLoadOption(LoadOption.BOTH);
-            }
-            executeFullRequest(request, photo, imageView);
-          }
-        }
-      }
-      imageView.setTag(photo);
-    }
-  }
-
-  public static void reloadBlurImg(final ImageView imageView) {
-    if (imageView != null && imageView.getTag() != null) {
-      final Photo photo = (Photo) imageView.getTag();
-      if (photo.getLoadingState() != ContentState.DONE) {
-        photo.setContentState(ContentState.LOADING);
-        CommonRequest<Photo> request = null;
-        switch (RequestManager.getExecuteMode()) {
-          case ROBO_SPIECE:
-            PhotoSpiceRequest spiceRequest = photo.newSpiceRequest();
-            if (saveTraffic) {
-              spiceRequest.setLoadOption(LoadOption.ONLY_FROM_CACHE);
-            } else {
-              spiceRequest.setLoadOption(LoadOption.BOTH);
-            }
-            request = new SpiceBuilder<Photo>().request(spiceRequest)
-                .build();
-            break;
-
-          case VOLLEY:
-            request =
-                new VolleyBuilder<Photo>().url(photo.getUrl())
-                    .method(Request.Method.GET)
-                    .actionDelivery(new BlurPhotoActionDelivery(photo)).build();
-            break;
-        }
-        if (request != null) {
-          request.setBlurResult(true);
-          photo.setRequest(request);
-          if (saveTraffic) {
-            request.setLoadOption(LoadOption.ONLY_FROM_CACHE);
-          } else {
-            request.setLoadOption(LoadOption.BOTH);
-          }
-          executeFullRequest(request, photo, imageView);
-        }
-        imageView.setTag(photo);
-      } else {
-        if (photo.getRequest() != null) {
-          photo.getRequest().cancel();
-        }
-      }
-    }
-  }
-
   public static void executeFullRequest(CommonRequest<Photo> request, final Photo photo,
       final ImageView imageView) {
     switch (RequestManager.getExecuteMode()) {
@@ -498,9 +349,9 @@ public class Photo {
   private static void processResult(Photo photo, ImageView imageView) {
     photo.setContentState(ContentState.DONE);
     if (photo.getResultHandler() == null) {
-      MMBean content = photo.getContent();
+      BaseMMBean content = photo.getContent();
       if (content != null) {
-        if (content.getType() == MMBean.TYPE_BITMAP) {
+        if (content.getDataType() == BaseMMBean.TYPE_BITMAP) {
           imageView.setImageBitmap(content.getDataBitmap());
         }
       }
@@ -516,7 +367,7 @@ public class Photo {
     url = TextUtil.parseUrl(url);
     this.contentState = ContentState.NONE;
     try {
-      MMBean result = requestManager.getCacheManager().getFromRam(url);
+      BaseMMBean result = requestManager.getCacheManager().getFromRam(url);
       if (result != null) {
         this.setContent(result);
         processResult(this, imageView);
@@ -527,7 +378,11 @@ public class Photo {
   }
 
   public interface ResultHandler {
-    public void onResult(MMBean content, ImageView targetImage);
+    public void onResult(BaseMMBean content, ImageView targetImage);
+
+    public BaseMMBean constructMMBeanFromStream(InputStream stream);
+
+    public BaseMMBean constructMMBeanFromBytes(byte[] data);
   }
 
   private static boolean saveTraffic() {

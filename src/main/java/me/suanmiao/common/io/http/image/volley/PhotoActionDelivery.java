@@ -8,7 +8,7 @@ import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 
-import me.suanmiao.common.io.MMBean;
+import me.suanmiao.common.io.cache.BaseMMBean;
 import me.suanmiao.common.io.http.image.Photo;
 import me.suanmiao.common.util.BitmapUtil;
 
@@ -28,7 +28,7 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
     try {
       if (response instanceof BitmapNetworkResponse) {
         BitmapNetworkResponse bitmapNetworkResponse = (BitmapNetworkResponse) response;
-        photo.setContent(new MMBean(bitmapNetworkResponse.getResult()));
+        photo.setContent(new BaseMMBean(bitmapNetworkResponse.getResult()));
         return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
       } else {
         /**
@@ -39,11 +39,19 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
           photo.setContentLength(Integer.parseInt(contentLength));
         }
         response.headers.get(KEY_CONTENT_LENGTH);
-        Bitmap result = BitmapUtil.decodePhoto(response.data, photo);
-        if (result != null) {
-          getCacheManager().put(photo.getUrl(), new MMBean(result), true);
+        if (photo.getResultHandler() != null) {
+          BaseMMBean bean = photo.getResultHandler().constructMMBeanFromBytes(response.data);
+          getCacheManager().put(photo.getUrl(), bean, true);
+          photo.setContent(bean);
+        } else {
+          Bitmap result = BitmapUtil.decodePhoto(response.data, photo);
+          if (result != null) {
+            BaseMMBean bean = new BaseMMBean(result);
+            getCacheManager().put(photo.getUrl(), bean, true);
+            photo.setContent(bean);
+          }
         }
-        photo.setContent(new MMBean(result));
+
         return Response.success(photo, HttpHeaderParser.parseCacheHeaders(response));
       }
     } catch (Exception e) {

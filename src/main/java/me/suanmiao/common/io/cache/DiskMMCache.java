@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import me.suanmiao.common.io.MMBean;
-
 /**
  * Created by suanmiao on 14-11-29.
  */
@@ -22,19 +20,19 @@ public class DiskMMCache {
     this.diskCache = diskCache;
   }
 
-  public MMBean get(String key) throws IOException {
+  public BaseMMBean get(String key) throws IOException {
     if (key == null) {
       return null;
     }
     DiskLruCache.Snapshot snapshot = diskCache.get(key);
     if (snapshot != null) {
       InputStream in = diskCache.get(key).getInputStream(BITMAP_VALUE_INDEX);
-      return MMBean.fromStream(in);
+      return new BaseMMBean(in);
     }
     return null;
   }
 
-  public boolean put(String key, MMBean value) throws IOException {
+  public boolean put(String key, BaseMMBean value) throws IOException {
     if (key != null || value != null) {
       DiskLruCache.Editor editor = diskCache.edit(key);
       OutputStream outputStream = editor.newOutputStream(BITMAP_VALUE_INDEX);

@@ -9,13 +9,11 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import me.suanmiao.common.io.MMBean;
-
 /**
  * Created by suanmiao on 14-11-29.
  */
 public class CacheManager {
-    private LruCache<String, MMBean> ramCache;
+    private LruCache<String, BaseMMBean> ramCache;
     private DiskMMCache diskBitmapCache;
     private static final int APP_VERSION = 1;
 
@@ -33,15 +31,15 @@ public class CacheManager {
         }
     }
 
-    public MMBean get(String originalKey) throws IOException {
+    public BaseMMBean get(String originalKey) throws IOException {
         if (ramCache == null || originalKey == null) {
             return null;
         }
-        MMBean ramResult = getFromRam(originalKey);
+        BaseMMBean ramResult = getFromRam(originalKey);
         if (ramResult != null) {
             return ramResult;
         }
-        MMBean diskResult = getFromDisk(originalKey);
+        BaseMMBean diskResult = getFromDisk(originalKey);
         if (diskResult != null) {
             putToRam(originalKey, diskResult);
             return diskResult;
@@ -49,7 +47,7 @@ public class CacheManager {
         return null;
     }
 
-    public MMBean getFromRam(String originalKey) throws IOException {
+    public BaseMMBean getFromRam(String originalKey) throws IOException {
         if (ramCache == null || originalKey == null) {
             return null;
         }
@@ -57,7 +55,7 @@ public class CacheManager {
         return ramCache.get(originalKey);
     }
 
-    public MMBean getFromDisk(String originalKey) throws IOException {
+    public BaseMMBean getFromDisk(String originalKey) throws IOException {
         if (diskBitmapCache == null || originalKey == null) {
             return null;
         }
@@ -65,7 +63,7 @@ public class CacheManager {
         return diskBitmapCache.get(originalKey);
     }
 
-    public boolean put(String originKey, MMBean value, boolean cacheToDisk) throws IOException {
+    public boolean put(String originKey, BaseMMBean value, boolean cacheToDisk) throws IOException {
         putToRam(originKey, value);
         if(cacheToDisk){
             return putToDisk(originKey,value);
@@ -73,7 +71,7 @@ public class CacheManager {
         return false;
    }
 
-    public boolean putToRam(String originKey, MMBean value) {
+    public boolean putToRam(String originKey, BaseMMBean value) {
         if (originKey != null && value != null) {
             originKey = getHashKey(originKey);
             ramCache.put(originKey, value);
@@ -83,7 +81,7 @@ public class CacheManager {
         }
     }
 
-    public boolean putToDisk(String originKey, MMBean value) {
+    public boolean putToDisk(String originKey, BaseMMBean value) {
         if (originKey != null && value != null && diskBitmapCache != null) {
             originKey = getHashKey(originKey);
             try {
