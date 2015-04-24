@@ -75,6 +75,7 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
       }
       baos.flush();
       byte[] data = baos.toByteArray();
+      baos.close();
       return getMMBeanFromByteArray(data);
     } catch (IOException e) {
       e.printStackTrace();
@@ -98,6 +99,7 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
       return new BigBitmapBean(bigBitmap);
     } else {
       Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+      data = null;
       return new BaseMMBean(resultBitmap);
     }
   }
