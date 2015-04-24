@@ -2,7 +2,6 @@ package me.suanmiao.common.io.cache;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.util.LruCache;
 
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -16,7 +15,7 @@ import me.suanmiao.common.io.cache.mmbean.AbstractMMBean;
  * Created by suanmiao on 14-11-29.
  */
 public class CacheManager {
-  private LruCache<String, AbstractMMBean> ramCache;
+  private LruBeanCache<String, AbstractMMBean> ramCache;
   private DiskMMCache diskBitmapCache;
   private static final int APP_VERSION = 1;
 
@@ -27,10 +26,10 @@ public class CacheManager {
   private IMMBeanGenerator immBeanGenerator;
 
   public CacheManager(String diskBitmapPath, Context context) {
-    ramCache = new LruCache<>(getMemoryCacheSize(context));
+    ramCache = new LruBeanCache<>(getMemoryCacheSize(context));
     try {
       diskBitmapCache = new DiskMMCache(diskBitmapPath, APP_VERSION, BITMAP_MAX_FILE_CACHE_SIZE);
-        setBeanGenerator(new CommonMMBeanGenerator());
+      setBeanGenerator(new CommonMMBeanGenerator());
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -77,7 +76,8 @@ public class CacheManager {
     return diskBitmapCache.get(originalKey);
   }
 
-  public boolean put(String originKey, AbstractMMBean value, boolean cacheToDisk) throws IOException {
+  public boolean put(String originKey, AbstractMMBean value, boolean cacheToDisk)
+      throws IOException {
     putToRam(originKey, value);
     if (cacheToDisk) {
       return putToDisk(originKey, value);

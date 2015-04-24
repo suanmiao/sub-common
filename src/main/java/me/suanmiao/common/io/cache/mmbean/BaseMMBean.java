@@ -56,4 +56,14 @@ public class BaseMMBean extends AbstractMMBean {
     return data;
   }
 
+  @Override
+  public int getSize() {
+    switch (getDataType()) {
+      case TYPE_BYTE:
+        return data.length;
+      case TYPE_BITMAP:
+        return dataBitmap.getByteCount();
+    }
+    return 0;
+  }
 }

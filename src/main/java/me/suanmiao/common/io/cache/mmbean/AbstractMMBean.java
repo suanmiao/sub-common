@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by suanmiao on 15/4/22.
  */
-public abstract class AbstractMMBean {
+public abstract class AbstractMMBean implements ISizeable{
   public static final int TYPE_NONE = -1;
   public static final int TYPE_BITMAP = 1;
   public static final int TYPE_BIG_BITMAP = 2;

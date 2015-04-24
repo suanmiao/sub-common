@@ -23,4 +23,9 @@ public class BigBitmapBean extends AbstractMMBean {
   public void writeData(OutputStream stream) {
     this.mData.toStream(stream);
   }
+
+  @Override
+  public int getSize() {
+    return mData.getTotalSize();
+  }
 }

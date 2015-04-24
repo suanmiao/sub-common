@@ -18,6 +18,7 @@ public class BigBitmap {
   private Bitmap[][] matrix;
   private int rowCount = 0;
   private int columnCount = 0;
+  private int totalSize;
 
   public static final int MAX_ITEM_WIDTH = 500;
   public static final int MAX_ITEM_HEIGHT = 500;
@@ -27,6 +28,14 @@ public class BigBitmap {
     this.rowCount = rowCount;
     this.columnCount = columnCount;
     this.matrix = matrix;
+    this.totalSize = 0;
+    if (this.matrix != null) {
+      for (int x = 0; x < columnCount; x++) {
+        for (int y = 0; y < rowCount; y++) {
+          totalSize += matrix[x][y].getByteCount();
+        }
+      }
+    }
   }
 
   public BigBitmap(byte[] data) {
@@ -34,6 +43,7 @@ public class BigBitmap {
   }
 
   private void init(byte[] data) {
+    this.totalSize = data.length;
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inJustDecodeBounds = true;
     BitmapFactory.decodeByteArray(data, 0, data.length, options);
@@ -158,5 +168,9 @@ public class BigBitmap {
 
   public int getRowCount() {
     return rowCount;
+  }
+
+  public int getTotalSize() {
+    return totalSize;
   }
 }
