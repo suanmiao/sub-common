@@ -40,13 +40,14 @@ public class DiskMMCache {
   public boolean put(String key, AbstractMMBean value) throws IOException {
     if (key != null || value != null) {
       DiskLruCache.Editor editor = diskCache.edit(key);
-      OutputStream outputStream = editor.newOutputStream(BITMAP_VALUE_INDEX);
-      value.toStream(outputStream);
-      editor.commit();
-      return true;
-    } else {
-      return false;
+      if (editor != null) {
+        OutputStream outputStream = editor.newOutputStream(BITMAP_VALUE_INDEX);
+        value.toStream(outputStream);
+        editor.commit();
+        return true;
+      }
     }
+    return false;
   }
 
 }
