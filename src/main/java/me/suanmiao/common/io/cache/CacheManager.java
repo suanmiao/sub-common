@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import me.suanmiao.common.io.cache.generator.CommonMMBeanGenerator;
 import me.suanmiao.common.io.cache.generator.IMMBeanGenerator;
 import me.suanmiao.common.io.cache.mmbean.AbstractMMBean;
 
@@ -29,6 +30,7 @@ public class CacheManager {
     ramCache = new LruCache<>(getMemoryCacheSize(context));
     try {
       diskBitmapCache = new DiskMMCache(diskBitmapPath, APP_VERSION, BITMAP_MAX_FILE_CACHE_SIZE);
+        setBeanGenerator(new CommonMMBeanGenerator());
     } catch (IOException e) {
       e.printStackTrace();
     }

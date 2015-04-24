@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import me.suanmiao.common.io.cache.generator.CommonMMBeanGenerator;
 import me.suanmiao.common.io.cache.generator.IMMBeanGenerator;
 import me.suanmiao.common.io.cache.mmbean.AbstractMMBean;
 
@@ -20,7 +19,6 @@ public class DiskMMCache {
   public DiskMMCache(String diskPath, int APP_VERSION,
       long diskSize) throws IOException {
     diskCache = DiskLruCache.open(new File(diskPath), APP_VERSION, 1, diskSize);
-    immBeanGenerator = new CommonMMBeanGenerator();
   }
 
   public void setBeanGenerator(IMMBeanGenerator immBeanGenerator) {

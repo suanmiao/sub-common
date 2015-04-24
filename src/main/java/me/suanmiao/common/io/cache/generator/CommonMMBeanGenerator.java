@@ -1,5 +1,6 @@
 package me.suanmiao.common.io.cache.generator;
 
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import java.io.ByteArrayOutputStream;
@@ -9,6 +10,8 @@ import java.nio.ByteBuffer;
 
 import me.suanmiao.common.io.cache.mmbean.AbstractMMBean;
 import me.suanmiao.common.io.cache.mmbean.BaseMMBean;
+import me.suanmiao.common.io.cache.mmbean.BigBitmapBean;
+import me.suanmiao.common.ui.widget.BigBitmap;
 
 /**
  * Created by suanmiao on 15/4/23.
@@ -42,6 +45,9 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
           return new BaseMMBean(baos.toByteArray());
         case AbstractMMBean.TYPE_BITMAP:
           return new BaseMMBean(BitmapFactory.decodeStream(stream));
+        case AbstractMMBean.TYPE_BIG_BITMAP:
+          BigBitmap bigBitmap = BigBitmap.fromStream(stream);
+          return new BigBitmapBean(bigBitmap);
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -51,11 +57,40 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
 
   @Override
   public AbstractMMBean constructMMBeanFromNetworkStream(InputStream stream) {
+    try {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      byte[] buffer = new byte[BUFFER_SIZE];
+      int len;
+      while ((len = stream.read(buffer)) > -1) {
+        baos.write(buffer, 0, len);
+      }
+      baos.flush();
+      byte[] data = baos.toByteArray();
+      return getMMBeanFromByteArray(data);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     return new BaseMMBean(BitmapFactory.decodeStream(stream));
   }
 
   @Override
   public AbstractMMBean constructMMBeanFromNetworkData(byte[] data) {
-    return new BaseMMBean(BitmapFactory.decodeByteArray(data, 0, data.length));
+    return getMMBeanFromByteArray(data);
   }
+
+  private AbstractMMBean getMMBeanFromByteArray(byte[] data) {
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inJustDecodeBounds = true;
+    BitmapFactory.decodeByteArray(data, 0, data.length, options);
+    int sourceWidth = options.outWidth;
+    int sourceHeight = options.outHeight;
+    if (sourceWidth > MAX_NORMAL_BITMAP_SIZE || sourceHeight > MAX_NORMAL_BITMAP_SIZE) {
+      BigBitmap bigBitmap = new BigBitmap(data);
+      return new BigBitmapBean(bigBitmap);
+    } else {
+      Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+      return new BaseMMBean(resultBitmap);
+    }
+  }
+
 }

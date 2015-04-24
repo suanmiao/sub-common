@@ -77,7 +77,7 @@ public class BigBitmap {
    * data structure:
    * |matrixWidth|matrixHeight|item1Size|item2Size|data1|data2|...|
    */
-  private static final int LENGTH_INT_TO_BYTE = 2;
+  private static final int LENGTH_INT_TO_BYTE = 4;
 
   public void toStream(OutputStream stream) {
     try {

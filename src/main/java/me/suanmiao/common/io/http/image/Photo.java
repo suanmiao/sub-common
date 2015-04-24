@@ -13,6 +13,7 @@ import java.io.IOException;
 import me.suanmiao.common.component.BaseApplication;
 import me.suanmiao.common.io.cache.mmbean.AbstractMMBean;
 import me.suanmiao.common.io.cache.mmbean.BaseMMBean;
+import me.suanmiao.common.io.cache.mmbean.BigBitmapBean;
 import me.suanmiao.common.io.http.CommonRequest;
 import me.suanmiao.common.io.http.ProgressListener;
 import me.suanmiao.common.io.http.RequestManager;
@@ -22,6 +23,7 @@ import me.suanmiao.common.io.http.VolleyBuilder;
 import me.suanmiao.common.io.http.VolleyCommonListener;
 import me.suanmiao.common.io.http.image.spice.PhotoSpiceRequest;
 import me.suanmiao.common.io.http.image.volley.PhotoActionDelivery;
+import me.suanmiao.common.ui.widget.BigDrawable;
 import me.suanmiao.common.util.TextUtil;
 
 /**
@@ -350,9 +352,13 @@ public class Photo {
     photo.setContentState(ContentState.DONE);
     if (photo.getResultHandler() == null) {
       AbstractMMBean content = photo.getContent();
+
       if (content != null) {
         if (content.getDataType() == AbstractMMBean.TYPE_BITMAP) {
-          imageView.setImageBitmap(((BaseMMBean)content).getDataBitmap());
+          imageView.setImageBitmap(((BaseMMBean) content).getDataBitmap());
+        } else if (content.getDataType() == AbstractMMBean.TYPE_BIG_BITMAP) {
+          BigDrawable drawable = new BigDrawable(((BigBitmapBean) content).getData());
+          imageView.setImageDrawable(drawable);
         }
       }
     } else {
