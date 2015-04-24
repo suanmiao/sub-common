@@ -42,15 +42,24 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
             baos.write(buffer, 0, len);
           }
           baos.flush();
-          return new BaseMMBean(baos.toByteArray());
+          BaseMMBean result = new BaseMMBean(baos.toByteArray());
+          baos.close();
+          return result;
         case AbstractMMBean.TYPE_BITMAP:
           return new BaseMMBean(BitmapFactory.decodeStream(stream));
         case AbstractMMBean.TYPE_BIG_BITMAP:
           BigBitmap bigBitmap = BigBitmap.fromStream(stream);
           return new BigBitmapBean(bigBitmap);
       }
+      stream.close();
     } catch (IOException e) {
       e.printStackTrace();
+    } finally {
+      try {
+        stream.close();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
     return null;
   }

@@ -28,6 +28,7 @@ public abstract class AbstractMMBean {
       stream.write(typeBytes);
       stream.write(sizeBytes);
       writeData(stream);
+      stream.close();
     } catch (IOException e) {
       e.printStackTrace();
     }

@@ -71,6 +71,7 @@ public class BigBitmap {
         }
       }
     }
+    data = null;
   }
 
   /**
@@ -88,9 +89,10 @@ public class BigBitmap {
           ByteArrayOutputStream itemOutputStream = new ByteArrayOutputStream();
           matrix[x][y].compress(Bitmap.CompressFormat.JPEG, 100, itemOutputStream);
           byte[] itemData = itemOutputStream.toByteArray();
-
+          itemOutputStream.close();
           stream.write(ByteBuffer.allocate(LENGTH_INT_TO_BYTE).putInt(itemData.length).array());
           stream.write(itemData);
+          itemData = null;
         }
       }
     } catch (IOException e) {
@@ -99,22 +101,31 @@ public class BigBitmap {
   }
 
   public static BigBitmap fromStream(InputStream stream) {
-    int columnCount = readInt(LENGTH_INT_TO_BYTE, stream);
-    int rowCount = readInt(LENGTH_INT_TO_BYTE, stream);
-    Bitmap[][] matrix = new Bitmap[columnCount][rowCount];
-    for (int x = 0; x < columnCount; x++) {
-      for (int y = 0; y < rowCount; y++) {
-        int size = readInt(LENGTH_INT_TO_BYTE, stream);
-        try {
+    try {
+      int columnCount = readInt(LENGTH_INT_TO_BYTE, stream);
+      int rowCount = readInt(LENGTH_INT_TO_BYTE, stream);
+      Bitmap[][] matrix = new Bitmap[columnCount][rowCount];
+      for (int x = 0; x < columnCount; x++) {
+        for (int y = 0; y < rowCount; y++) {
+          int size = readInt(LENGTH_INT_TO_BYTE, stream);
           byte[] itemData = new byte[size];
           stream.read(itemData);
           matrix[x][y] = BitmapFactory.decodeByteArray(itemData, 0, itemData.length);
-        } catch (IOException e) {
-          e.printStackTrace();
+          itemData = null;
         }
       }
+      return new BigBitmap(rowCount, columnCount, matrix);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        stream.close();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
-    return new BigBitmap(rowCount, columnCount, matrix);
+    return null;
   }
 
   private static int readInt(int length, InputStream stream) {
@@ -123,7 +134,6 @@ public class BigBitmap {
       stream.read(data);
       ByteBuffer byteBuffer = ByteBuffer.wrap(data);
       return byteBuffer.getInt();
-
     } catch (IOException e) {
       e.printStackTrace();
     }

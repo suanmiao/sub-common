@@ -40,6 +40,7 @@ public class BaseMMBean extends AbstractMMBean {
           ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
           dataBitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
           stream.write(byteArrayOutputStream.toByteArray());
+          byteArrayOutputStream.close();
           break;
       }
     } catch (IOException e) {
