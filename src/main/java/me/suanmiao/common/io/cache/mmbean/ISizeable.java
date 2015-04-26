@@ -6,4 +6,5 @@ package me.suanmiao.common.io.cache.mmbean;
 public interface ISizeable {
 
   public int getSize();
+
 }

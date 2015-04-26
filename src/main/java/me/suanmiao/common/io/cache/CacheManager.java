@@ -22,6 +22,7 @@ public class CacheManager {
   private static final int MB = 1024 * 1024;
   private static final float BITMAP_MEMORY_CACHE_SIZE_SCALE = 0.15f; // 15% memory
   private static final int BITMAP_MAX_FILE_CACHE_SIZE = 16 * MB; // 16M
+  private static final int MAX_RAM_CACHE_ITEM_SIZE = 1 * MB;
 
   private IMMBeanGenerator immBeanGenerator;
 
@@ -78,9 +79,13 @@ public class CacheManager {
 
   public boolean put(String originKey, AbstractMMBean value, boolean cacheToDisk)
       throws IOException {
-    putToRam(originKey, value);
-    if (cacheToDisk) {
-      return putToDisk(originKey, value);
+    if (value.getSize() < MAX_RAM_CACHE_ITEM_SIZE) {
+      putToRam(originKey, value);
+      if (cacheToDisk) {
+        return putToDisk(originKey, value);
+      }
+    } else {
+      putToDisk(originKey, value);
     }
     return false;
   }

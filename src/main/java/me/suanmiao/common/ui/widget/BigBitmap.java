@@ -29,10 +29,18 @@ public class BigBitmap {
     this.columnCount = columnCount;
     this.matrix = matrix;
     this.totalSize = 0;
+    totalWidth = 0;
+    totalHeight = 0;
     if (this.matrix != null) {
       for (int x = 0; x < columnCount; x++) {
         for (int y = 0; y < rowCount; y++) {
           totalSize += matrix[x][y].getByteCount();
+          if (y == 0) {
+            totalWidth += matrix[x][y].getWidth();
+          }
+          if (x == 0) {
+            totalHeight += matrix[x][y].getHeight();
+          }
         }
       }
     }
@@ -56,6 +64,7 @@ public class BigBitmap {
     rowCount = matrixRow;
     columnCount = matrixColumn;
     matrix = new Bitmap[matrixColumn][matrixRow];
+    totalSize = 0;
     for (int x = 0; x < matrixColumn; x++) {
       for (int y = 0; y < matrixRow; y++) {
         int itemWidth, itemHeight;
@@ -76,6 +85,7 @@ public class BigBitmap {
               new Rect(x * MAX_ITEM_WIDTH, y * MAX_ITEM_HEIGHT, x * MAX_ITEM_WIDTH + itemWidth, y
                   * MAX_ITEM_HEIGHT + itemHeight);
           matrix[x][y] = regionDecoder.decodeRegion(itemRect, new BitmapFactory.Options());
+          totalSize += matrix[x][y].getByteCount();
         } catch (IOException e) {
           e.printStackTrace();
         }
