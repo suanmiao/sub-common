@@ -17,7 +17,7 @@ import me.suanmiao.common.ui.widget.BigBitmap;
  * Created by suanmiao on 15/4/23.
  */
 public class CommonMMBeanGenerator implements IMMBeanGenerator {
-  public static final int MAX_NORMAL_BITMAP_SIZE = 500;
+  public static final int MAX_NORMAL_BITMAP_SIZE = 900;
 
   private static final int BUFFER_SIZE = 512;
 
