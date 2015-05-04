@@ -39,7 +39,7 @@ public class PhotoActionDelivery extends BaseCachePhotoActionDelivery {
         }
         response.headers.get(KEY_CONTENT_LENGTH);
         AbstractMMBean bean =
-            getCacheManager().getBeanGenerator().constructMMBeanFromNetworkData(response.data);
+            getCacheManager().getBeanGenerator().constructMMBeanFromNetworkData(photo.getLoadOption(),response.data);
         getCacheManager().put(photo.getUrl(), bean, true);
         photo.setContent(bean);
         getCacheManager().put(photo.getUrl(), bean, true);
