@@ -39,8 +39,6 @@ public class Photo {
 
   private AbstractMMBean content;
 
-  private ResultHandler mResultHandler;
-
   /**
    * about progress
    */
@@ -70,11 +68,11 @@ public class Photo {
 
   private static RequestManager mRequestManager;
 
-  public Photo(String url, int viewWidth, int viewHeight, ResultHandler resultHandler) {
+  public Photo(String url, int viewWidth, int viewHeight, Option option) {
     this.viewWidth = viewWidth;
     this.viewHeight = viewHeight;
     this.url = url;
-    this.mResultHandler = resultHandler;
+    this.loadOption = option;
     mRequestManager = BaseApplication.getRequestManager();
   }
 
@@ -117,10 +115,6 @@ public class Photo {
     this.loadOption = loadOption;
   }
 
-  public ResultHandler getResultHandler() {
-    return mResultHandler;
-  }
-
   public void setProgressListener(ProgressListener progressListener) {
     this.progressListener = progressListener;
   }
@@ -160,7 +154,7 @@ public class Photo {
    * @param url target url to request image
    * @return
    */
-  public static Photo getObject(ImageView view, String url, ResultHandler resultHandler) {
+  public static Photo getObject(ImageView view, String url,Option option) {
     /**
      * scheme :
      * when there is a Photo object in imageView's tag,just compare the url ,if not equal ,cancel
@@ -183,7 +177,7 @@ public class Photo {
         width = view.getLayoutParams().width > 0 ? view.getLayoutParams().width : 0;
         height = view.getLayoutParams().height > 0 ? view.getLayoutParams().height : 0;
       }
-      return new Photo(url, width, height, resultHandler);
+      return new Photo(url, width, height, option);
     }
   }
 
@@ -193,13 +187,13 @@ public class Photo {
   }
 
   public static void loadScrollItemImg(final ImageView imageView, String url,
-      int defaultResourceID, int scrollState, ResultHandler resultHandler) {
+      int defaultResourceID, int scrollState, Option option) {
     if (TextUtils.isEmpty(url)) {
       return;
     }
     url = TextUtil.parseUrl(url);
 
-    final Photo photo = Photo.getObject(imageView, url, resultHandler);
+    final Photo photo = Photo.getObject(imageView, url, option);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView);
@@ -245,8 +239,8 @@ public class Photo {
   }
 
   public static void loadImg(final ImageView imageView, String url, int defaultResourceID,
-      ResultHandler resultHandler) {
-    final Photo photo = Photo.getObject(imageView, url, resultHandler);
+      Option option) {
+    final Photo photo = Photo.getObject(imageView, url, option);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
         photo.loadFromRamCache(mRequestManager, imageView);
@@ -354,7 +348,7 @@ public class Photo {
 
   private static void processResult(Photo photo, ImageView imageView) {
     photo.setContentState(ContentState.DONE);
-    if (photo.getResultHandler() == null) {
+    if (photo.getLoadOption().mResultHandler == null) {
       AbstractMMBean content = photo.getContent();
 
       if (content != null) {
@@ -366,7 +360,7 @@ public class Photo {
         }
       }
     } else {
-      photo.getResultHandler().onResult(photo.getContent(), imageView);
+      photo.getLoadOption().mResultHandler.onResult(photo.getContent(), imageView);
     }
   }
 
@@ -396,6 +390,8 @@ public class Photo {
     public int sampledMaxBitmapSize;
     public LoadSource loadSource;
     public String cacheSuffix = "";
+
+    public ResultHandler mResultHandler;
 
     public Option() {
       this.loadSource = LoadSource.BOTH;
