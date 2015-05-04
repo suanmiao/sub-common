@@ -38,24 +38,24 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
   private Photo loadNormalPhoto() throws IOException {
     switch (loadSource) {
       case ONLY_FROM_CACHE: {
-        AbstractMMBean cacheContent = getCacheManager().get(photo.getUrl());
+        AbstractMMBean cacheContent = getCacheManager().get(photo.getCacheKey());
         photo.setContent(cacheContent);
       }
         break;
       case ONLY_FROM_NETWORK: {
         AbstractMMBean networkContent = getMMFromNetwork();
         if (shouldCache && networkContent != null) {
-          getCacheManager().put(photo.getUrl(), networkContent, true);
+          getCacheManager().put(photo.getCacheKey(), networkContent, true);
         }
         photo.setContent(networkContent);
       }
         break;
       case BOTH: {
-        AbstractMMBean content = getCacheManager().get(photo.getUrl());
+        AbstractMMBean content = getCacheManager().get(photo.getCacheKey());
         if (content == null) {
           content = getMMFromNetwork();
           if (shouldCache && content != null) {
-            getCacheManager().put(photo.getUrl(), content, true);
+            getCacheManager().put(photo.getCacheKey(), content, true);
           }
         }
         photo.setContent(content);
@@ -78,7 +78,7 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
 
     InputStream in = response.body().byteStream();
     return getCacheManager().getBeanGenerator().constructMMBeanFromNetworkStream(
-        photo.getLoadOption(), in);
+        photo, in);
   }
 
   public boolean isShouldCache() {

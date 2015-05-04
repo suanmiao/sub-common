@@ -50,10 +50,10 @@ public class CommonNetwork extends BasicNetwork {
     return super.performRequest(request);
   }
 
-  private Bitmap getImageFromCache(FakeVolleyRequest fakeVolleyRequest) {
+  private Bitmap getImageFromCache(FakePhotoVolleyRequest fakeVolleyRequest) {
     try {
       CacheManager mCacheManager = BaseApplication.getRequestManager().getCacheManager();
-      AbstractMMBean bean = mCacheManager.get(fakeVolleyRequest.getUrl());
+      AbstractMMBean bean = mCacheManager.get(fakeVolleyRequest.getPhoto().getCacheKey());
       if (bean != null && bean.getDataType() == AbstractMMBean.TYPE_BITMAP) {
         return ((BaseMMBean) bean).getDataBitmap();
       }

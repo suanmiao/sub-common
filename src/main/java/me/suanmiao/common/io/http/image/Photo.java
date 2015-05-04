@@ -94,6 +94,10 @@ public class Photo {
     return url;
   }
 
+  public String getCacheKey() {
+    return getUrl() + getLoadOption().cacheSuffix;
+  }
+
   public void setContent(AbstractMMBean content) {
     this.content = content;
   }
@@ -198,7 +202,7 @@ public class Photo {
     final Photo photo = Photo.getObject(imageView, url, resultHandler);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
-        photo.loadFromRamCache(mRequestManager, imageView, url);
+        photo.loadFromRamCache(mRequestManager, imageView);
         if (saveTraffic()) {
           return;
         }
@@ -245,7 +249,7 @@ public class Photo {
     final Photo photo = Photo.getObject(imageView, url, resultHandler);
     if (photo != null) {
       if (photo.getLoadingState() != ContentState.DONE) {
-        photo.loadFromRamCache(mRequestManager, imageView, url);
+        photo.loadFromRamCache(mRequestManager, imageView);
         if (photo.getLoadingState() != ContentState.DONE) {
           imageView.setImageResource(defaultResourceID);
           photo.setContentState(ContentState.LOADING);
@@ -366,14 +370,10 @@ public class Photo {
     }
   }
 
-  public void loadFromRamCache(RequestManager requestManager, ImageView imageView, String url) {
-    if (TextUtils.isEmpty(url)) {
-      return;
-    }
-    url = TextUtil.parseUrl(url);
+  public void loadFromRamCache(RequestManager requestManager, ImageView imageView) {
     this.contentState = ContentState.NONE;
     try {
-      AbstractMMBean result = requestManager.getCacheManager().getFromRam(url);
+      AbstractMMBean result = requestManager.getCacheManager().getFromRam(getCacheKey());
       if (result != null) {
         this.setContent(result);
         processResult(this, imageView);
@@ -384,9 +384,18 @@ public class Photo {
   }
 
   public static class Option {
-    public boolean sampleBigBitmap;
+    public boolean sampleBigBitmap = true;
+    /**
+     * the bitmap will be sampled to the size of image view, this will save memory
+     */
+    public boolean sampleToImageSize = false;
+    /**
+     * the max size for normal bitmap ,if 'sampleBigBitmap' is true and the bitmap original size
+     * exceeds the size,it will be saved in normal bitmap
+     */
     public int sampledMaxBitmapSize;
     public LoadSource loadSource;
+    public String cacheSuffix = "";
 
     public Option() {
       this.loadSource = LoadSource.BOTH;

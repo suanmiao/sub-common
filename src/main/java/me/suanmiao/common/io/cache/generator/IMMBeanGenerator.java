@@ -12,8 +12,8 @@ public interface IMMBeanGenerator {
 
   public AbstractMMBean generateMMBeanFromTotalStream(InputStream stream);
 
-  public AbstractMMBean constructMMBeanFromNetworkStream(Photo.Option loadOption,InputStream stream);
+  public AbstractMMBean constructMMBeanFromNetworkStream(Photo loadOption,InputStream stream);
 
-  public AbstractMMBean constructMMBeanFromNetworkData(Photo.Option loadOption, byte[] data);
+  public AbstractMMBean constructMMBeanFromNetworkData(Photo loadOption, byte[] data);
 
 }

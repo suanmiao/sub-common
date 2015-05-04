@@ -66,7 +66,7 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
   }
 
   @Override
-  public AbstractMMBean constructMMBeanFromNetworkStream(Photo.Option loadOption, InputStream stream) {
+  public AbstractMMBean constructMMBeanFromNetworkStream(Photo photo, InputStream stream) {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       byte[] buffer = new byte[BUFFER_SIZE];
@@ -77,7 +77,7 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
       baos.flush();
       byte[] data = baos.toByteArray();
       baos.close();
-      return getMMBeanFromByteArray(loadOption, data);
+      return getMMBeanFromByteArray(photo, data);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -85,35 +85,47 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
   }
 
   @Override
-  public AbstractMMBean constructMMBeanFromNetworkData(Photo.Option loadOption, byte[] data) {
-    return getMMBeanFromByteArray(loadOption, data);
+  public AbstractMMBean constructMMBeanFromNetworkData(Photo photo, byte[] data) {
+    return getMMBeanFromByteArray(photo, data);
   }
 
-  private AbstractMMBean getMMBeanFromByteArray(Photo.Option loadOption, byte[] data) {
+  private AbstractMMBean getMMBeanFromByteArray(Photo photo, byte[] data) {
+    Photo.Option loadOption = photo.getLoadOption();
     BitmapFactory.Options options = new BitmapFactory.Options();
     options.inJustDecodeBounds = true;
     BitmapFactory.decodeByteArray(data, 0, data.length, options);
     int sourceWidth = options.outWidth;
     int sourceHeight = options.outHeight;
-    if (sourceWidth > MAX_NORMAL_BITMAP_SIZE || sourceHeight > MAX_NORMAL_BITMAP_SIZE) {
-      // determine whether to sample the bitmap or create a big bitmap
-      if (loadOption.sampleBigBitmap) {
-        int maxSampledSize =
-            loadOption.sampledMaxBitmapSize != 0
-                ? loadOption.sampledMaxBitmapSize
-                : MAX_NORMAL_BITMAP_SIZE;
-        options.inJustDecodeBounds = false;
-        options.inSampleSize =
-            (int) Math.ceil((float) Math.max(sourceWidth, sourceHeight) / (float) maxSampledSize);
-        Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-        return new BaseMMBean(resultBitmap);
-      } else {
-        BigBitmap bigBitmap = new BigBitmap(data);
-        return new BigBitmapBean(bigBitmap);
-      }
-    } else {
-      Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+    if (loadOption.sampleToImageSize) {
+      float widthSampleSize = (float) photo.getViewWidth() / (float) sourceWidth;
+      float heightSampleSize = (float) photo.getViewHeight() / (float) sourceHeight;
+
+      options.inJustDecodeBounds = false;
+      options.inSampleSize =
+          (int) Math.ceil(Math.max(1, Math.min(widthSampleSize, heightSampleSize)));
+      Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
       return new BaseMMBean(resultBitmap);
+    } else {
+      if (sourceWidth > MAX_NORMAL_BITMAP_SIZE || sourceHeight > MAX_NORMAL_BITMAP_SIZE) {
+        // determine whether to sample the bitmap or create a big bitmap
+        if (loadOption.sampleBigBitmap) {
+          int maxSampledSize =
+              loadOption.sampledMaxBitmapSize != 0
+                  ? loadOption.sampledMaxBitmapSize
+                  : MAX_NORMAL_BITMAP_SIZE;
+          options.inJustDecodeBounds = false;
+          options.inSampleSize =
+              (int) Math.ceil((float) Math.max(sourceWidth, sourceHeight) / (float) maxSampledSize);
+          Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+          return new BaseMMBean(resultBitmap);
+        } else {
+          BigBitmap bigBitmap = new BigBitmap(data);
+          return new BigBitmapBean(bigBitmap);
+        }
+      } else {
+        Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        return new BaseMMBean(resultBitmap);
+      }
     }
   }
 
