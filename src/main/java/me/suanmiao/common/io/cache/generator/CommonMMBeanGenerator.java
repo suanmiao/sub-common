@@ -112,8 +112,8 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
       cacheManager.putToDisk(key, new BigBitmapBean(bigBitmap));
     }
     if (loadOption.sampleToImageSize) {
-      float widthSampleSize = (float) photo.getViewWidth() / (float) sourceWidth;
-      float heightSampleSize = (float) photo.getViewHeight() / (float) sourceHeight;
+      float widthSampleSize = (float) sourceWidth / (float) photo.getViewWidth();
+      float heightSampleSize = (float) sourceHeight / (float) photo.getViewHeight();
 
       float maxTextureSampleSize =
           (float) Math.max(sourceHeight, sourceWidth)
@@ -123,7 +123,7 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
       options.inSampleSize =
           (int) Math.ceil(Math.max(1, Math.min(widthSampleSize, heightSampleSize)));
       // to prevent 'Bitmap too large to be uploaded into a texture'
-      options.inSampleSize = Math.max(options.inSampleSize, (int) maxTextureSampleSize);
+      options.inSampleSize = Math.max(options.inSampleSize, (int) Math.ceil(maxTextureSampleSize));
       Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
       return new BaseMMBean(resultBitmap);
     } else {
