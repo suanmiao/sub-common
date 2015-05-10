@@ -15,6 +15,7 @@ import me.suanmiao.common.io.cache.mmbean.BaseMMBean;
 import me.suanmiao.common.io.cache.mmbean.BigBitmapBean;
 import me.suanmiao.common.io.http.image.Photo;
 import me.suanmiao.common.ui.widget.BigBitmap;
+import me.suanmiao.common.util.helper.SystemHelper;
 
 /**
  * Created by suanmiao on 15/4/23.
@@ -114,9 +115,15 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
       float widthSampleSize = (float) photo.getViewWidth() / (float) sourceWidth;
       float heightSampleSize = (float) photo.getViewHeight() / (float) sourceHeight;
 
+      float maxTextureSampleSize =
+          (float) Math.max(sourceHeight, sourceWidth)
+              / Math.max(SystemHelper.getScreenWidth() * 2, SystemHelper.getScreenHeight() * 2);
+
       options.inJustDecodeBounds = false;
       options.inSampleSize =
           (int) Math.ceil(Math.max(1, Math.min(widthSampleSize, heightSampleSize)));
+      // to prevent 'Bitmap too large to be uploaded into a texture'
+      options.inSampleSize = Math.max(options.inSampleSize, (int) maxTextureSampleSize);
       Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
       return new BaseMMBean(resultBitmap);
     } else {
