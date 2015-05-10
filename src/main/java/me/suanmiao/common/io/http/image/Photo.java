@@ -380,11 +380,18 @@ public class Photo {
      * exceeds the size,it will be saved in normal bitmap
      */
     public int sampledMaxBitmapSize;
+    /**
+     * whether cache original photo,when 'sampleToImageSize' is true,but you want to use original
+     * photo,we will cache it to file ,the suffix is 'original'
+     */
+    public boolean cacheOriginalPhoto = false;
     public LoadSource loadSource;
     public String cacheSuffix = "";
     public ProgressListener progressListener;
 
     public ResultHandler mResultHandler;
+
+    public static final String SUFFIX_ORIGINAL = "original";
 
     public Option() {
       this.loadSource = LoadSource.BOTH;

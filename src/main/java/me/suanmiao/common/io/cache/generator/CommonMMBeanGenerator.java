@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import me.suanmiao.common.component.BaseApplication;
+import me.suanmiao.common.io.cache.CacheManager;
 import me.suanmiao.common.io.cache.mmbean.AbstractMMBean;
 import me.suanmiao.common.io.cache.mmbean.BaseMMBean;
 import me.suanmiao.common.io.cache.mmbean.BigBitmapBean;
@@ -102,6 +104,12 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
     BitmapFactory.decodeByteArray(data, 0, data.length, options);
     int sourceWidth = options.outWidth;
     int sourceHeight = options.outHeight;
+    if (loadOption.cacheOriginalPhoto) {
+      BigBitmap bigBitmap = new BigBitmap(data);
+      CacheManager cacheManager = BaseApplication.getRequestManager().getCacheManager();
+      String key = photo.getUrl() + Photo.Option.SUFFIX_ORIGINAL;
+      cacheManager.putToDisk(key, new BigBitmapBean(bigBitmap));
+    }
     if (loadOption.sampleToImageSize) {
       float widthSampleSize = (float) photo.getViewWidth() / (float) sourceWidth;
       float heightSampleSize = (float) photo.getViewHeight() / (float) sourceHeight;
