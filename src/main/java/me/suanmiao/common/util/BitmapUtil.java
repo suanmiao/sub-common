@@ -38,8 +38,8 @@ public class BitmapUtil {
       options.inJustDecodeBounds = false;
       options.inSampleSize = sampleSize;
       Bitmap result = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-      if (photo.getProgressListener() != null && photo.getContentLength() > 0) {
-        photo.getProgressListener().onProgress(1.0f);
+      if (photo.getLoadOption().progressListener != null && photo.getContentLength() > 0) {
+        photo.getLoadOption().progressListener.onProgress(1.0f);
       }
       return result;
     } else {
@@ -55,8 +55,8 @@ public class BitmapUtil {
       options.inSampleSize = sampleSize;
 
       Bitmap result = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-      if (photo.getProgressListener() != null && photo.getContentLength() > 0) {
-        photo.getProgressListener().onProgress(1.0f);
+      if (photo.getLoadOption().progressListener != null && photo.getContentLength() > 0) {
+        photo.getLoadOption().progressListener.onProgress(1.0f);
       }
       return result;
     }
@@ -79,8 +79,8 @@ public class BitmapUtil {
       inputStream.reset();
 
       Bitmap result = BitmapFactory.decodeStream(inputStream, null, options);
-      if (photo.getProgressListener() != null && photo.getContentLength() > 0) {
-        photo.getProgressListener().onProgress(1.0f);
+      if (photo.getLoadOption().progressListener != null && photo.getContentLength() > 0) {
+        photo.getLoadOption().progressListener.onProgress(1.0f);
       }
       return result;
     } else {
@@ -107,8 +107,8 @@ public class BitmapUtil {
       options.inSampleSize = sampleSize;
 
       Bitmap result = BitmapFactory.decodeStream(is2, null, options);
-      if (photo.getProgressListener() != null && photo.getContentLength() > 0) {
-        photo.getProgressListener().onProgress(1.0f);
+      if (photo.getLoadOption().progressListener != null && photo.getContentLength() > 0) {
+        photo.getLoadOption().progressListener.onProgress(1.0f);
       }
       return result;
     }
@@ -124,8 +124,8 @@ public class BitmapUtil {
     while ((nRead = in.read(buffer, 0, buffer.length)) != -1) {
       outputStream.write(buffer, 0, nRead);
       readSize += nRead;
-      if (photo.getProgressListener() != null && photo.getContentLength() > 0) {
-        photo.getProgressListener().onProgress(
+      if (photo.getLoadOption().progressListener != null && photo.getContentLength() > 0) {
+        photo.getLoadOption().progressListener.onProgress(
             (readSize / photo.getContentLength() * READING_TAKE_UP_PERCENT));
       }
     }

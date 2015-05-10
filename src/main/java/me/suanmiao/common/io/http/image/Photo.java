@@ -115,14 +115,6 @@ public class Photo {
     this.loadOption = loadOption;
   }
 
-  public void setProgressListener(ProgressListener progressListener) {
-    this.progressListener = progressListener;
-  }
-
-  public ProgressListener getProgressListener() {
-    return progressListener;
-  }
-
   public void setContentLength(int contentLength) {
     this.contentLength = contentLength;
   }
@@ -154,7 +146,7 @@ public class Photo {
    * @param url target url to request image
    * @return
    */
-  public static Photo getObject(ImageView view, String url,Option option) {
+  public static Photo getObject(ImageView view, String url, Option option) {
     /**
      * scheme :
      * when there is a Photo object in imageView's tag,just compare the url ,if not equal ,cancel
@@ -390,6 +382,7 @@ public class Photo {
     public int sampledMaxBitmapSize;
     public LoadSource loadSource;
     public String cacheSuffix = "";
+    public ProgressListener progressListener;
 
     public ResultHandler mResultHandler;
 

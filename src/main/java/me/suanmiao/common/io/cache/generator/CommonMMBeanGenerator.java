@@ -21,6 +21,7 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
   public static final int MAX_NORMAL_BITMAP_SIZE = 900;
 
   private static final int BUFFER_SIZE = 512;
+  private static final float READING_TAKE_UP_PERCENT = 0.9f;
 
   @Override
   public AbstractMMBean generateMMBeanFromTotalStream(InputStream stream) {
@@ -70,9 +71,14 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
     try {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       byte[] buffer = new byte[BUFFER_SIZE];
+      float readSize = 0;
       int len;
       while ((len = stream.read(buffer)) > -1) {
         baos.write(buffer, 0, len);
+        readSize += len;
+        if (photo.getContentLength() != 0) {
+          notifyProgress(photo, (readSize / photo.getContentLength() * READING_TAKE_UP_PERCENT));
+        }
       }
       baos.flush();
       byte[] data = baos.toByteArray();
@@ -126,6 +132,12 @@ public class CommonMMBeanGenerator implements IMMBeanGenerator {
         Bitmap resultBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
         return new BaseMMBean(resultBitmap);
       }
+    }
+  }
+
+  private void notifyProgress(Photo photo, float progress) {
+    if (photo.getLoadOption().progressListener != null) {
+      photo.getLoadOption().progressListener.onProgress(progress);
     }
   }
 

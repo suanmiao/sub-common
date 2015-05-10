@@ -38,7 +38,11 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
   private Photo loadNormalPhoto() throws IOException {
     switch (loadSource) {
       case ONLY_FROM_CACHE: {
+        notifyProgress(photo, 0);
         AbstractMMBean cacheContent = getCacheManager().get(photo.getCacheKey());
+        if (cacheContent != null) {
+          notifyProgress(photo, 1f);
+        }
         photo.setContent(cacheContent);
       }
         break;
@@ -47,6 +51,7 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
         if (shouldCache && networkContent != null) {
           getCacheManager().put(photo.getCacheKey(), networkContent, true);
         }
+        notifyProgress(photo, 1f);
         photo.setContent(networkContent);
       }
         break;
@@ -58,6 +63,7 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
             getCacheManager().put(photo.getCacheKey(), content, true);
           }
         }
+        notifyProgress(photo, 1f);
         photo.setContent(content);
       }
         break;
@@ -79,6 +85,12 @@ public class PhotoSpiceRequest extends BaseCacheImageRequest<Photo> {
     InputStream in = response.body().byteStream();
     return getCacheManager().getBeanGenerator().constructMMBeanFromNetworkStream(
         photo, in);
+  }
+
+  private void notifyProgress(Photo photo, float progress) {
+    if (photo.getLoadOption().progressListener != null) {
+      photo.getLoadOption().progressListener.onProgress(progress);
+    }
   }
 
   public boolean isShouldCache() {
