@@ -39,11 +39,6 @@ public class Photo {
 
   private AbstractMMBean content;
 
-  /**
-   * about progress
-   */
-  private ProgressListener progressListener;
-
   private Option loadOption;
 
   private int contentLength;
@@ -66,7 +61,7 @@ public class Photo {
 
   private ICommonRequest request;
 
-  private static RequestManager mRequestManager;
+  protected static RequestManager mRequestManager;
 
   public Photo(String url, int viewWidth, int viewHeight, Option option) {
     this.viewWidth = viewWidth;
@@ -205,7 +200,7 @@ public class Photo {
 
             switch (RequestManager.getExecuteMode()) {
               case ROBO_SPIECE: {
-                PhotoSpiceRequest request = new PhotoSpiceRequest(photo);
+                PhotoSpiceRequest request = photo.createSpiceRequest();
 
                 photo.setRequest(request);
                 executeSpiceRequest(request, photo, imageView);
@@ -213,7 +208,7 @@ public class Photo {
                 break;
 
               case VOLLEY: {
-                PhotoVolleyRequest request = new PhotoVolleyRequest(photo);
+                PhotoVolleyRequest request = photo.createVolleyRequest();
                 photo.setRequest(request);
                 executeVolleyRequest(request, photo, imageView);
               }
@@ -246,15 +241,14 @@ public class Photo {
           }
           switch (RequestManager.getExecuteMode()) {
             case ROBO_SPIECE: {
-              // spiceRequest.setLoadSource(LoadSource.BOTH);
-              PhotoSpiceRequest request = new PhotoSpiceRequest(photo);
+              PhotoSpiceRequest request = photo.createSpiceRequest();
 
               photo.setRequest(request);
               executeSpiceRequest(request, photo, imageView);
             }
               break;
             case VOLLEY: {
-              PhotoVolleyRequest request = new PhotoVolleyRequest(photo);
+              PhotoVolleyRequest request = photo.createVolleyRequest();
               photo.setRequest(request);
               executeVolleyRequest(request, photo, imageView);
             }
@@ -279,14 +273,14 @@ public class Photo {
         switch (RequestManager.getExecuteMode()) {
           case ROBO_SPIECE: {
             // spiceRequest.setLoadSource(LoadSource.BOTH);
-            PhotoSpiceRequest request = new PhotoSpiceRequest(photo);
+            PhotoSpiceRequest request = photo.createSpiceRequest();
 
             photo.setRequest(request);
             executeSpiceRequest(request, photo, imageView);
           }
             break;
           case VOLLEY: {
-            PhotoVolleyRequest request = new PhotoVolleyRequest(photo);
+            PhotoVolleyRequest request = photo.createVolleyRequest();
             photo.setRequest(request);
             executeVolleyRequest(request, photo, imageView);
           }
@@ -296,6 +290,14 @@ public class Photo {
         imageView.setTag(photo);
       }
     }
+  }
+
+  protected PhotoSpiceRequest createSpiceRequest() {
+    return new PhotoSpiceRequest(this);
+  }
+
+  protected PhotoVolleyRequest createVolleyRequest() {
+    return new PhotoVolleyRequest(this);
   }
 
   public static void executeSpiceRequest(SpiceRequest request, final Photo photo,
